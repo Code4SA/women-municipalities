@@ -54,12 +54,27 @@ div.tooltip .result {
     color: #333;
 }
 
+div#logo {
+    text-align: right;
+    width: 600px;
+    margin-top: -60px;
+    margin-left: -50px;
+}
+
+div#logo img {
+    width: 80px;
+}
+
 
 </style>
 <body>
-<script src="d3.v3.min.js"></script>
-<script src="topojson.v1.min.js"></script>
-<script>
+    <div id="container"></div>
+    <div id="logo">
+        <img src="http://code4sa.org/images/logo.png"/>
+    </div>
+    <script src="d3.v3.min.js"></script>
+    <script src="topojson.v1.min.js"></script>
+    <script>
 
 //Map dimensions (in pixels)
 var width = 600,
@@ -76,7 +91,7 @@ var path = d3.geo.path()
     .projection(projection);
 
 //Create an SVG
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#container").append("svg")
     .attr("width", width)
     .attr("height", height);
 
