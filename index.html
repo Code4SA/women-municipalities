@@ -138,7 +138,7 @@ function moveTooltip() {
     var bbox = tooltip.node().getBoundingClientRect();
     if (d3.event.pageX > (width - bbox.width)) {
         offset = tooltipOffsetRight;
-        offset.x = -bbox.width;
+        offset.x = -bbox.width - 25;
     }
 
   tooltip.style("top",(d3.event.pageY+offset.y)+"px")
