@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 12px sans-serif;
+}
+
+path {
+  stroke-width: 1px;
+  stroke: white;
+  fill: #999;
+  cursor: pointer;
+}
+
+path.q0-5 {
+  fill: #fef0d9;
+}
+
+path.q1-5 {
+  fill: #fdcc8a;
+}
+
+path.q2-5 {
+  fill: #fc8d59;
+}
+
+path.q3-5 {
+  fill: #e34a33;
+}
+
+path.q4-5 {
+  fill: #b30000;
+}
+
+div.tooltip {
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  font-weight: bold;
+  padding: 4px 8px;
+  display: none;
+}
+
+div.tooltip .heading {
+    text-transform: title;
+    margin-bottom:5px;
+}
+
+div.tooltip .result {
+    font-size: 0.8em;
+    color: #333;
+}
+
+
+</style>
+<body>
+<script src="d3.v3.min.js"></script>
+<script src="topojson.v1.min.js"></script>
+<script>
+
+//Map dimensions (in pixels)
+var width = 600,
+    height = 528;
+
+//Map projection
+var projection = d3.geo.mercator()
+    .scale(1981.1280740237403)
+    .center([24.69431378639518,-28.676064358016077]) //projection center
+    .translate([width/2,height/2]) //translate to center the map in view
+
+//Generate paths based on projection
+var path = d3.geo.path()
+    .projection(projection);
+
+//Create an SVG
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//Group for the map features
+var features = svg.append("g")
+    .attr("class","features");
+
+//Create choropleth scale
+var color = d3.scale.quantize()
+    .domain([0,17])
+    .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
+
+//Create a tooltip, hidden at the start
+var tooltip = d3.select("body").append("div").attr("class","tooltip");
+
+d3.json("out.topojson",function(error,geodata) {
+  if (error) return console.log(error); //unknown error, check the console
+
+  //Create a path for each map feature in the data
+  features.selectAll("path")
+    .data(topojson.feature(geodata,geodata.objects.muni_interactive).features) //generate features from TopoJSON
+    .enter()
+    .append("path")
+    .attr("d",path)
+    .attr("class", function(d) { return (typeof color(d.properties.women_winners) == "string" ? color(d.properties.women_winners) : ""); })
+    .on("mouseover",showTooltip)
+    .on("mousemove",moveTooltip)
+    .on("mouseout",hideTooltip)
+    .on("click",clicked);
+
+});
+
+// Add optional onClick events for features here
+// d.properties contains the attributes (e.g. d.properties.name, d.properties.population)
+function clicked(d,i) {
+
+}
+
+
+//Position of the tooltip relative to the cursor
+var tooltipOffset = {x: 5, y: -25};
+
+//Create a tooltip, hidden at the start
+function showTooltip(d) {
+  moveTooltip();
+
+  var html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result"># Women winners: ' + d.properties.women_winners + '</span><br><span class="result"># ANC women: ' + d.properties.anc_winners + '</span><br><span class="result"># DA women: ' + d.properties.da_winners + '</span><br><span class="result"># Other women: ' + d.properties.other_winners + '</span>';
+  if (d.properties.women_winners === null) 
+      html = '<span class="heading">' + d.properties.municipality + "</span><br>The winners in this municipality have not yet been announced";
+
+  tooltip.style("display","block")
+      .html(html);
+}
+
+//Move the tooltip to track the mouse
+function moveTooltip() {
+  tooltip.style("top",(d3.event.pageY+tooltipOffset.y)+"px")
+      .style("left",(d3.event.pageX+tooltipOffset.x)+"px");
+}
+
+//Create a tooltip, hidden at the start
+function hideTooltip() {
+  tooltip.style("display","none");
+}
+</script>
