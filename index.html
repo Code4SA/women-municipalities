@@ -41,6 +41,7 @@ div.tooltip {
   font-weight: bold;
   padding: 4px 8px;
   display: none;
+  max-width: 150px;
 }
 
 div.tooltip .heading {
@@ -117,6 +118,7 @@ function clicked(d,i) {
 
 //Position of the tooltip relative to the cursor
 var tooltipOffset = {x: 5, y: -25};
+var tooltipOffsetRight = {x: -100, y: -25};
 
 //Create a tooltip, hidden at the start
 function showTooltip(d) {
@@ -124,7 +126,7 @@ function showTooltip(d) {
 
   var html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result"># Women winners: ' + d.properties.women_winners + '</span><br><span class="result"># ANC women: ' + d.properties.anc_winners + '</span><br><span class="result"># DA women: ' + d.properties.da_winners + '</span><br><span class="result"># Other women: ' + d.properties.other_winners + '</span>';
   if (d.properties.women_winners === null) 
-      html = '<span class="heading">' + d.properties.municipality + "</span><br>The winners in this municipality have not yet been announced";
+      html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result">The winners in this municipality have not yet been announced</span>';
 
   tooltip.style("display","block")
       .html(html);
@@ -132,8 +134,15 @@ function showTooltip(d) {
 
 //Move the tooltip to track the mouse
 function moveTooltip() {
-  tooltip.style("top",(d3.event.pageY+tooltipOffset.y)+"px")
-      .style("left",(d3.event.pageX+tooltipOffset.x)+"px");
+    var offset = tooltipOffset;
+    var bbox = tooltip.node().getBoundingClientRect();
+    if (d3.event.pageX > (width - bbox.width)) {
+        offset = tooltipOffsetRight;
+        offset.x = -bbox.width;
+    }
+
+  tooltip.style("top",(d3.event.pageY+offset.y)+"px")
+      .style("left",(d3.event.pageX+offset.x)+"px");
 }
 
 //Create a tooltip, hidden at the start
