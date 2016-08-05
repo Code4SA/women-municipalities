@@ -6,10 +6,39 @@ body {
   font: 12px sans-serif;
 }
 
+h1.title {
+    position: absolute;
+    float: right;
+    left: 50px;
+}
+
+h2 {
+    position: absolute;
+    float: left;
+    left: 52px;
+    top: 50px;
+}
+
+h2.subtitle {
+    font-size: 10px;
+}
+
+h2.explainer {
+    font-size: 8px;
+}
+
+h3.source {
+    font-size: 7px;
+    position: absolute;
+    left: 452px;
+    top: 510px;
+}
+
+
 path {
   stroke-width: 1px;
   stroke: white;
-  fill: #999;
+  fill: #fef0d9;
   cursor: pointer;
 }
 
@@ -26,11 +55,11 @@ path.q2-5 {
 }
 
 path.q3-5 {
-  fill: #e34a33;
+  fill: #b30000;
 }
 
 path.q4-5 {
-  fill: #b30000;
+  fill: #ff4a33;
 }
 
 div.tooltip {
@@ -41,24 +70,32 @@ div.tooltip {
   font-weight: bold;
   padding: 4px 8px;
   display: none;
-  max-width: 150px;
+  width: 150px;
+  
 }
 
 div.tooltip .heading {
     text-transform: title;
-    margin-bottom:5px;
+}
+
+div.tooltip .line {
+    border-bottom: solid thin black;
+    margin-bottom: 5px;
+    width: 100%;
 }
 
 div.tooltip .result {
     font-size: 0.8em;
     color: #333;
+    margin-bottom:4px;
 }
 
 div#logo {
     text-align: right;
     width: 600px;
-    margin-top: -60px;
+    margin-top: -70px;
     margin-left: -50px;
+    float:right
 }
 
 div#logo img {
@@ -68,10 +105,13 @@ div#logo img {
 
 </style>
 <body>
+    <h1 class="title">Women ward councillors</h1>
+    <h2 class="subtitle">2016 Local Government Elections</h2>
     <div id="container"></div>
     <div id="logo">
         <img src="http://code4sa.org/images/logo.png"/>
     </div>
+    <h3 class="source">Source: Independent Electoral Commission</h3>
     <script src="d3.v3.min.js"></script>
     <script src="topojson.v1.min.js"></script>
     <script>
@@ -101,7 +141,7 @@ var features = svg.append("g")
 
 //Create choropleth scale
 var color = d3.scale.quantize()
-    .domain([0,17])
+    .domain([0,100])
     .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
 
 //Create a tooltip, hidden at the start
@@ -115,12 +155,15 @@ d3.json("out.topojson",function(error,geodata) {
     .data(topojson.feature(geodata,geodata.objects.muni_interactive).features) //generate features from TopoJSON
     .enter()
     .append("path")
+    .each(function(d) {
+        d.properties["perc_women"] = Math.round(d.properties.women_winners / d.properties.total_wards * 100)
+    })
     .attr("d",path)
-    .attr("class", function(d) { return (typeof color(d.properties.women_winners) == "string" ? color(d.properties.women_winners) : ""); })
+    .attr("class", function(d) { return (typeof color(d.properties.perc_women) == "string" ? color(d.properties.perc_women) : ""); })
     .on("mouseover",showTooltip)
     .on("mousemove",moveTooltip)
     .on("mouseout",hideTooltip)
-    .on("click",clicked);
+    .on("click",clicked)
 
 });
 
@@ -131,15 +174,20 @@ function clicked(d,i) {
 }
 
 
-//Position of the tooltip relative to the cursor
-var tooltipOffset = {x: 5, y: -25};
-var tooltipOffsetRight = {x: -100, y: -25};
-
 //Create a tooltip, hidden at the start
 function showTooltip(d) {
   moveTooltip();
-
-  var html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result"># Women winners: ' + d.properties.women_winners + '</span><br><span class="result"># ANC women: ' + d.properties.anc_winners + '</span><br><span class="result"># DA women: ' + d.properties.da_winners + '</span><br><span class="result"># Other women: ' + d.properties.other_winners + '</span>';
+  //var perc_won = Math.round(d.properties.women_winners / d.properties.total_wards * 100);
+  var html = [
+    '<div class="heading">' + d.properties.municipality + '</div>',
+    '<div class="line"></div>',
+    '<div class="result">Total wards: ' + d.properties.total_wards + '</div>',
+    '<div class="result">Women winners: ' + d.properties.women_winners + '</div>',
+    '<div class="result">ANC women: ' + d.properties.anc_winners + '</div>',
+    '<div class="result">DA women: ' + d.properties.da_winners + '</div>',
+    '<div class="result">Other women: ' + d.properties.other_winners + '</div>',
+    '<div class="result">Women won ' + d.properties.perc_women + '% of wards</div>'
+  ].join("")
   if (d.properties.women_winners === null) 
       html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result">The winners in this municipality have not yet been announced</span>';
 
@@ -149,11 +197,14 @@ function showTooltip(d) {
 
 //Move the tooltip to track the mouse
 function moveTooltip() {
-    var offset = tooltipOffset;
+    var offset = {x: 5, y: -25}
     var bbox = tooltip.node().getBoundingClientRect();
-    if (d3.event.pageX > (width - bbox.width)) {
-        offset = tooltipOffsetRight;
-        offset.x = -bbox.width - 25;
+    if (d3.event.pageX > (width - bbox.width) - 5) {
+        offset.x = -bbox.width - 5;
+    }
+    if (d3.event.pageY > (height - bbox.height)) {
+
+        offset.y = -bbox.height - 5;
     }
 
   tooltip.style("top",(d3.event.pageY+offset.y)+"px")
