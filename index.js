@@ -12,7 +12,8 @@ export {
 
 export {
   select,
-  selectAll
+  selectAll,
+  event
 } from "d3-selection";
 
 export {
