@@ -111,7 +111,7 @@ div#logo img {
         <img src="logo.png"/>
     </div>
     <h3 class="source">Source: Independent Electoral Commission</h3>
-    <script src="d3.v3.min.js"></script>
+    <script src="d3.min.js"></script>
     <script src="topojson.v1.min.js"></script>
     <script>
 
@@ -120,13 +120,13 @@ var width = 600,
     height = 528;
 
 //Map projection
-var projection = d3.geo.mercator()
+var projection = d3.geoMercator()
     .scale(1981.1280740237403)
     .center([24.69431378639518,-28.676064358016077]) //projection center
     .translate([width/2,height/2]) //translate to center the map in view
 
 //Generate paths based on projection
-var path = d3.geo.path()
+var path = d3.geoPath()
     .projection(projection);
 
 //Create an SVG
@@ -139,7 +139,7 @@ var features = svg.append("g")
     .attr("class","features");
 
 //Create choropleth scale
-var color = d3.scale.quantize()
+var color = d3.scaleQuantize()
     .domain([0,100])
     .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
 
