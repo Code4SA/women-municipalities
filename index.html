@@ -184,6 +184,7 @@ div#logo img {
     //Create a tooltip, hidden at the start
     function showTooltip(d) {
       moveTooltip();
+      console.log(d.properties)
       var html = [
         '<div class="heading">' + d.properties.municipality + '</div>',
         '<div class="line"></div>',
