@@ -25,6 +25,43 @@ var color = d3.scaleQuantize()
     .domain([0,100])
     .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
 
+var legend_length = 20;
+var legend = svg.append("g")
+    .classed("legend", true)
+    .attr("transform", "translate(35, 10)")
+
+var legend_parts = legend.append("g").attr("transform", "translate(0, 30)")
+legend_parts.selectAll("rect")
+    .data([0, 1, 2, 3])
+    .enter()
+    .append("rect")
+        .attr("x", 0)
+        .attr("y", function(el, i) {
+            return i * 1.5 * legend_length;
+        })
+        .attr("width", legend_length)
+        .attr("height", legend_length)
+        .attr("class", function(d, i) {
+            return color(i * 20);
+        })
+        .style("opacity", 0.8)
+
+legend_parts.selectAll("text")
+    .data([0, 1, 2, 3])
+    .enter()
+    .append("text")
+    .attr("transform", function(el, i) {
+        return "translate(30," + (i * legend_length * 1.5) + ")";
+    })
+    .text(function(el, i) {
+        return (i * 20) + " - " + ((i + 1) * 20) + "%";
+    })
+    .attr("dy", "1.3em")
+
+legend.append("text")
+    .attr("dy", "1em")
+    .text("% of wards won by women")
+
 //Create a tooltip, hidden at the start
 var tooltip = d3.select("body").append("div").attr("class","tooltip");
 

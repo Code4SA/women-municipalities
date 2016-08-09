@@ -45,23 +45,24 @@ path {
   cursor: pointer;
 }
 
-path.q0-5 {
+
+.q0-5 {
   fill: #fef0d9;
 }
 
-path.q1-5 {
+.q1-5 {
   fill: #fdcc8a;
 }
 
-path.q2-5 {
+.q2-5 {
   fill: #fc8d59;
 }
 
-path.q3-5 {
+.q3-5 {
   fill: #b30000;
 }
 
-path.q4-5 {
+.q4-5 {
   fill: #ff4a33;
 }
 
@@ -93,6 +94,10 @@ div.tooltip .result {
     margin-bottom:4px;
 }
 
+.legend text {
+    font-family: helvetica, arial, sans;
+}
+
 div#logo {
     text-align: left;
     margin-top: -40px;
@@ -103,6 +108,7 @@ div#logo {
 div#logo img {
     width: 80px;
 }
+
 
 #svg {
     width:100%;
