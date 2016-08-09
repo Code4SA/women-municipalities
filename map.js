@@ -100,7 +100,7 @@ function showTooltip(d) {
     '<div class="heading">' + d.properties.municipality + '</div>',
     '<div class="line"></div>',
     '<div class="result">Total wards: ' + d.properties.total_wards + '</div>',
-    '<div class="result">Women winners: ' + d.properties.women_winners + '</div>',
+    '<div class="result">Female winners: ' + d.properties.women_winners + '</div>',
     '<div class="result">ANC women: ' + d.properties.anc_winners + '</div>',
     '<div class="result">DA women: ' + d.properties.da_winners + '</div>',
     '<div class="result">Other women: ' + d.properties.other_winners + '</div>',
