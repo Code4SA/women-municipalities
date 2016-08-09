@@ -1,280 +1,167 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-
-body {
-  font: 12px sans-serif;
-}
-
-#container {
-    width: 100%;
-}
-
-#container2 {
-width: 900px;
-}
-
-h1.title {
-    position: relative;
-    left: 4%;
-}
-
-h2 {
-    clear: left;
-    position: relative;
-    float: left;
-    left: 4%;
-    top: -20px;
-}
-
-h2.subtitle {
-    font-size: 1em;
-}
-
-h2.explainer {
-    font-size: 8px;
-}
-
-h3.source {
-    font-size: 10px;
-    position: absolute;
-    float: right;
-}
-
-
-path {
-  stroke-width: 1px;
-  stroke: white;
-  fill: #aaa;
-  cursor: pointer;
-}
-
-path.q0-5 {
-  fill: #fef0d9;
-}
-
-path.q1-5 {
-  fill: #fdcc8a;
-}
-
-path.q2-5 {
-  fill: #fc8d59;
-}
-
-path.q3-5 {
-  fill: #b30000;
-}
-
-path.q4-5 {
-  fill: #ff4a33;
-}
-
-div.tooltip {
-  position: absolute;
-  background-color: white;
-  border: 1px solid black;
-  color: black;
-  font-weight: bold;
-  padding: 4px 8px;
-  display: none;
-  width: 150px;
-  
-}
-
-div.tooltip .heading {
-    text-transform: title;
-}
-
-div.tooltip .line {
-    border-bottom: solid thin black;
-    margin-bottom: 5px;
-    width: 100%;
-}
-
-div.tooltip .result {
-    font-size: 0.8em;
-    color: #333;
-    margin-bottom:4px;
-}
-
-div#logo {
-    text-align: left;
-    margin-top: -40px;
-    clear: both;
-    float: left;
-}
-
-div#logo img {
-    width: 80px;
-}
-
-#svg {
-    width:100%;
-    height: auto;
-}
-
-</style>
-</head>
-<body>
-    <div id="container2">
-        <h1 class="title">Female ward councillors</h1>
-        <h2 class="subtitle">2016 Local Government Elections</h2>
-        <div id="container"></div>
-        <div id="logo">
-            <img src="logo.png"/>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="style.css"/>
+    </head>
+    <body>
+        <div id="container2">
+            <h1 class="title">Female ward councillors</h1>
+            <h2 class="subtitle">2016 Local Government Elections</h2>
+            <div id="container"></div>
+            <div id="logo">
+                <img src="logo.png"/>
+            </div>
+            <h3 class="source">Source: Independent Electoral Commission</h3>
         </div>
-        <h3 class="source">Source: Independent Electoral Commission</h3>
-    </div>
-    <script src="d3.min.js"></script>
-    <script src="topojson.v1.min.js"></script>
+        <script src="d3.min.js"></script>
+        <script src="topojson.v1.min.js"></script>
+        <script>
+
+        var image_ratio = 0.55;
+
+        //Map projection
+        var projection = d3.geoMercator()
+            .scale(1981.1280740237403)
+            .center([24.69431378639518,-28.676064358016077]) //projection center
+
+        //Generate paths based on projection
+        var path = d3.geoPath()
+            .projection(projection);
+
+        //Create an SVG
+        var svg = d3.select("#container").append("svg")
+            .attr("width", "100%")
+            .attr("height", function(el) {
+                return get_width(d3.select(this)) * image_ratio;
+            });
+
+        //Group for the map features
+        var features = svg.append("g")
+            .attr("class","features");
+
+        //Create choropleth scale
+        var color = d3.scaleQuantize()
+            .domain([0,100])
+            .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
+
+        //Create a tooltip, hidden at the start
+        var tooltip = d3.select("body").append("div").attr("class","tooltip");
+
+        d3.json("out.topojson",function(error,geodata) {
+          if (error) return console.log(error); //unknown error, check the console
+
+          //Create a path for each map feature in the data
+          features.selectAll("path")
+            .data(topojson.feature(geodata,geodata.objects.muni_interactive).features) //generate features from TopoJSON
+            .enter()
+            .append("path")
+            .each(function(d) {
+                d.properties["perc_women"] = Math.round(d.properties.women_winners / d.properties.total_wards * 100)
+            })
+            .attr("d",path)
+            .attr("class", function(d) { return (typeof color(d.properties.perc_women) == "string" ? color(d.properties.perc_women) : ""); })
+            .on("mouseover",showTooltip)
+            .on("mousemove",moveTooltip)
+            .on("mouseout",hideTooltip)
+            .on("click",clicked)
+
+        });
+
+        // Add optional onClick events for features here
+        // d.properties contains the attributes (e.g. d.properties.name, d.properties.population)
+        function clicked(d,i) {
+
+        }
+
+
+        //Create a tooltip, hidden at the start
+        function showTooltip(d) {
+          moveTooltip();
+          console.log(d.properties)
+          var html = [
+            '<div class="heading">' + d.properties.municipality + '</div>',
+            '<div class="line"></div>',
+            '<div class="result">Total wards: ' + d.properties.total_wards + '</div>',
+            '<div class="result">Women winners: ' + d.properties.women_winners + '</div>',
+            '<div class="result">ANC women: ' + d.properties.anc_winners + '</div>',
+            '<div class="result">DA women: ' + d.properties.da_winners + '</div>',
+            '<div class="result">Other women: ' + d.properties.other_winners + '</div>',
+            '<div class="result">Women won ' + d.properties.perc_women + '% of wards</div>'
+          ].join("")
+          if (d.properties.women_winners === null) 
+              html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result">The winners in this municipality have not yet been announced</span>';
+
+          tooltip.style("display","block")
+              .html(html);
+        }
+
+        //Move the tooltip to track the mouse
+        function moveTooltip() {
+            var offset = {x: 5, y: -25}
+            var bbox = tooltip.node().getBoundingClientRect();
+            var svg_width = get_width(d3.select("#container svg"));
+            var svg_height = get_height(d3.select("#container svg"));
+
+            if (d3.event.pageX > (svg_width - bbox.width) - 5) {
+                offset.x = -bbox.width - 5;
+            }
+            if (d3.event.pageY > (svg_height - bbox.height)) {
+
+                offset.y = -bbox.height - 5;
+            }
+
+          tooltip.style("top",(d3.event.pageY+offset.y)+"px")
+              .style("left",(d3.event.pageX+offset.x)+"px");
+        }
+
+        //Create a tooltip, hidden at the start
+        function hideTooltip() {
+          tooltip.style("display","none");
+        }
+
+        function get_width(el) {
+            return el.node().getBoundingClientRect().width;
+        }
+
+        function get_height(el) {
+            return el.node().getBoundingClientRect().height;
+        }
+
+        function sizeChange() {
+            var svg = d3.select("#container svg");
+            var width = get_width(svg);
+
+            svg.select("g.features")
+                .attr("transform", "scale(" + (width / initial_width) + ")")
+
+            svg.attr("height", function(el) {
+                return width * image_ratio;
+            });
+        }
+
+        d3.select(window).on("resize", sizeChange);
+        var initial_width = get_width(svg);
+        sizeChange();
+    </script>
+
+    <script src="pym.js"></script>
     <script>
+          var pymChild = new pym.Child({ id: 'code4sa-women-index',
+          polling: 1000
+          });
+    </script>
 
-    var image_ratio = 0.55;
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    //Map projection
-    var projection = d3.geoMercator()
-        .scale(1981.1280740237403)
-        .center([24.69431378639518,-28.676064358016077]) //projection center
+      ga('create', 'UA-48399585-31', 'auto');
+      ga('send', 'pageview');
 
-    //Generate paths based on projection
-    var path = d3.geoPath()
-        .projection(projection);
-
-    //Create an SVG
-    var svg = d3.select("#container").append("svg")
-        .attr("width", "100%")
-        .attr("height", function(el) {
-            return get_width(d3.select(this)) * image_ratio;
-        });
-
-    //Group for the map features
-    var features = svg.append("g")
-        .attr("class","features");
-
-    //Create choropleth scale
-    var color = d3.scaleQuantize()
-        .domain([0,100])
-        .range(d3.range(5).map(function(i) { return "q" + i + "-5"; }));
-
-    //Create a tooltip, hidden at the start
-    var tooltip = d3.select("body").append("div").attr("class","tooltip");
-
-    d3.json("out.topojson",function(error,geodata) {
-      if (error) return console.log(error); //unknown error, check the console
-
-      //Create a path for each map feature in the data
-      features.selectAll("path")
-        .data(topojson.feature(geodata,geodata.objects.muni_interactive).features) //generate features from TopoJSON
-        .enter()
-        .append("path")
-        .each(function(d) {
-            d.properties["perc_women"] = Math.round(d.properties.women_winners / d.properties.total_wards * 100)
-        })
-        .attr("d",path)
-        .attr("class", function(d) { return (typeof color(d.properties.perc_women) == "string" ? color(d.properties.perc_women) : ""); })
-        .on("mouseover",showTooltip)
-        .on("mousemove",moveTooltip)
-        .on("mouseout",hideTooltip)
-        .on("click",clicked)
-
-    });
-
-    // Add optional onClick events for features here
-    // d.properties contains the attributes (e.g. d.properties.name, d.properties.population)
-    function clicked(d,i) {
-
-    }
-
-
-    //Create a tooltip, hidden at the start
-    function showTooltip(d) {
-      moveTooltip();
-      console.log(d.properties)
-      var html = [
-        '<div class="heading">' + d.properties.municipality + '</div>',
-        '<div class="line"></div>',
-        '<div class="result">Total wards: ' + d.properties.total_wards + '</div>',
-        '<div class="result">Women winners: ' + d.properties.women_winners + '</div>',
-        '<div class="result">ANC women: ' + d.properties.anc_winners + '</div>',
-        '<div class="result">DA women: ' + d.properties.da_winners + '</div>',
-        '<div class="result">Other women: ' + d.properties.other_winners + '</div>',
-        '<div class="result">Women won ' + d.properties.perc_women + '% of wards</div>'
-      ].join("")
-      if (d.properties.women_winners === null) 
-          html = '<span class="heading">' + d.properties.municipality + '</span><br><span class="result">The winners in this municipality have not yet been announced</span>';
-
-      tooltip.style("display","block")
-          .html(html);
-    }
-
-    //Move the tooltip to track the mouse
-    function moveTooltip() {
-        var offset = {x: 5, y: -25}
-        var bbox = tooltip.node().getBoundingClientRect();
-        var svg_width = get_width(d3.select("#container svg"));
-        var svg_height = get_height(d3.select("#container svg"));
-
-        if (d3.event.pageX > (svg_width - bbox.width) - 5) {
-            offset.x = -bbox.width - 5;
-        }
-        if (d3.event.pageY > (svg_height - bbox.height)) {
-
-            offset.y = -bbox.height - 5;
-        }
-
-      tooltip.style("top",(d3.event.pageY+offset.y)+"px")
-          .style("left",(d3.event.pageX+offset.x)+"px");
-    }
-
-    //Create a tooltip, hidden at the start
-    function hideTooltip() {
-      tooltip.style("display","none");
-    }
-
-    function get_width(el) {
-        return el.node().getBoundingClientRect().width;
-    }
-
-    function get_height(el) {
-        return el.node().getBoundingClientRect().height;
-    }
-
-    function sizeChange() {
-        var svg = d3.select("#container svg");
-        var width = get_width(svg);
-
-        svg.select("g.features")
-            .attr("transform", "scale(" + (width / initial_width) + ")")
-
-        svg.attr("height", function(el) {
-            return width * image_ratio;
-        });
-    }
-
-    d3.select(window).on("resize", sizeChange);
-    var initial_width = get_width(svg);
-    sizeChange();
-</script>
-
-<script src="pym.js"></script>
-<script>
-      var pymChild = new pym.Child({ id: 'code4sa-women-index',
-      polling: 1000
-      });
-</script>
-
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-48399585-31', 'auto');
-  ga('send', 'pageview');
-
-</script>
-</body>
+    </script>
+    </body>
 </html>

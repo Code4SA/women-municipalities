@@ -1,0 +1,111 @@
+body {
+  font: 12px sans-serif;
+}
+
+#container {
+    width: 100%;
+}
+
+#container2 {
+width: 900px;
+}
+
+h1.title {
+    position: relative;
+    left: 4%;
+}
+
+h2 {
+    clear: left;
+    position: relative;
+    float: left;
+    left: 4%;
+    top: -20px;
+}
+
+h2.subtitle {
+    font-size: 1em;
+}
+
+h2.explainer {
+    font-size: 8px;
+}
+
+h3.source {
+    font-size: 10px;
+    position: absolute;
+    float: right;
+}
+
+
+path {
+  stroke-width: 1px;
+  stroke: white;
+  fill: #aaa;
+  cursor: pointer;
+}
+
+path.q0-5 {
+  fill: #fef0d9;
+}
+
+path.q1-5 {
+  fill: #fdcc8a;
+}
+
+path.q2-5 {
+  fill: #fc8d59;
+}
+
+path.q3-5 {
+  fill: #b30000;
+}
+
+path.q4-5 {
+  fill: #ff4a33;
+}
+
+div.tooltip {
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  font-weight: bold;
+  padding: 4px 8px;
+  display: none;
+  width: 150px;
+  
+}
+
+div.tooltip .heading {
+    text-transform: title;
+}
+
+div.tooltip .line {
+    border-bottom: solid thin black;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+div.tooltip .result {
+    font-size: 0.8em;
+    color: #333;
+    margin-bottom:4px;
+}
+
+div#logo {
+    text-align: left;
+    margin-top: -40px;
+    clear: both;
+    float: left;
+}
+
+div#logo img {
+    width: 80px;
+}
+
+#svg {
+    width:100%;
+    height: auto;
+}
+
